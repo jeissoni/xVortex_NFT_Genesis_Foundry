@@ -28,6 +28,7 @@ contract LifeOut is Test {
     uint256 public limitByAddress; 
     uint256 public NFTLifeOut; 
 
+
     function setUp() public {
         owner = address(this);        
         addr1 = cheats.addr(1);
@@ -36,39 +37,55 @@ contract LifeOut is Test {
         testLifeOutGenesis = new LifeOutGenesis();
         testLifeOutGenesis.setStartSale(true);
 
-        mintCost = testLifeOutGenesis.MINT_COST();
+        mintCost = testLifeOutGenesis.mintCost();
         limitByAddress = testLifeOutGenesis.LIMIT_NFT_BY_ADDRES();
         NFTLifeOut = testLifeOutGenesis.AVAILABLE_SUPPLY();
     }
+  
 
-    function buyManyAcount() public {
-        for(uint i = 0; i < 333; i++){
-            address cuenta = cheats.addr(i+1);
-            cheats.deal(cuenta, 2 ether);
-
-            cheats.prank(cuenta);
-            
-            testLifeOutGenesis.mintLifeOutGenesis
-            {value: mintCost * limitByAddress}(limitByAddress);
-        }
-    }
-    function testBuyNft() public {       
-
-        buyManyAcount();
-
-        // for(uint i = 0; i < 333; i++){
-        //     address cuenta = cheats.addr(i+1);
-        //     cheats.deal(cuenta, 2 ether);
-
-        //     cheats.prank(cuenta);
-            
-        //     testLifeOutGenesis.mintLifeOutGenesis
-        //     {value: mintCost * limitByAddress}(limitByAddress);
-        // }
-
-        assertEq(NFTLifeOut, testLifeOutGenesis.tokenIdCounter() - 1);
-        assertEq(mintCost * NFTLifeOut , address(testLifeOutGenesis).balance);
-        
+    function testNotChangeOwner() public {
+        vm.expectRevert(bytes("Ownable: caller is not the owner"));
+        cheats.prank(addr1);
+        testLifeOutGenesis.transferOwnership(addr1);
     }
 
+    function testChangeOwner() public {
+        testLifeOutGenesis.transferOwnership(addr1);
+        assertEq(testLifeOutGenesis.owner(), addr1);
+    }
+
+    function testSetNewMintCost() public {        
+        testLifeOutGenesis.setMintCost(0.1 ether);
+        assertEq(testLifeOutGenesis.mintCost(), 0.1 ether);
+    }
+
+    function testDoesNotChangeMintCost() public {
+        vm.expectRevert(bytes("Ownable: caller is not the owner"));
+        cheats.prank(addr1);
+        testLifeOutGenesis.setMintCost(0.1 ether);
+    }
+
+    function testDoesNotSetStarSale() public {
+        vm.expectRevert(bytes("Ownable: caller is not the owner"));
+        cheats.prank(addr1);
+        testLifeOutGenesis.setStartSale(true);
+    }
+
+    function testSetStartSale() public {
+        testLifeOutGenesis.setStartSale(true);
+        assertEq(testLifeOutGenesis.startSale(), true);
+    }
+
+    function testDoesNotSetBaseURI() public {
+        vm.expectRevert(bytes("Ownable: caller is not the owner"));
+        cheats.prank(addr1);
+        testLifeOutGenesis.setBaseURI("new base URI");
+    }
+
+    function testSetBaseURI() public {
+        testLifeOutGenesis.setBaseURI("new base URI");
+        assertEq(testLifeOutGenesis.baseURI(), "new base URI");
+    }
+
+   
 }
