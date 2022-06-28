@@ -24,6 +24,10 @@ contract LifeOut is Test {
     address public addr1;
     address public addr2;
 
+    uint256 public mintCost;
+    uint256 public limitByAddress; 
+    uint256 public NFTLifeOut; 
+
     function setUp() public {
         owner = address(this);        
         addr1 = cheats.addr(1);
@@ -31,15 +35,15 @@ contract LifeOut is Test {
 
         testLifeOutGenesis = new LifeOutGenesis();
         testLifeOutGenesis.setStartSale(true);
+
+        mintCost = testLifeOutGenesis.MINT_COST();
+        limitByAddress = testLifeOutGenesis.LIMIT_NFT_BY_ADDRES();
+        NFTLifeOut = testLifeOutGenesis.AVAILABLE_SUPPLY();
     }
 
-    function testBuyNft() public {
-
-        uint256 mintCost = testLifeOutGenesis.MINT_COST();
-        uint256 limitByAddress = testLifeOutGenesis.LIMIT_NFT_BY_ADDRES();
-
-        for(uint i = 1; i < 334; i++){
-            address cuenta = cheats.addr(i);
+    function buyManyAcount() public {
+        for(uint i = 0; i < 333; i++){
+            address cuenta = cheats.addr(i+1);
             cheats.deal(cuenta, 2 ether);
 
             cheats.prank(cuenta);
@@ -47,8 +51,24 @@ contract LifeOut is Test {
             testLifeOutGenesis.mintLifeOutGenesis
             {value: mintCost * limitByAddress}(limitByAddress);
         }
-        console.log(testLifeOutGenesis.tokenIdCounter());
-        console.log(address(testLifeOutGenesis).balance);
+    }
+    function testBuyNft() public {       
+
+        buyManyAcount();
+
+        // for(uint i = 0; i < 333; i++){
+        //     address cuenta = cheats.addr(i+1);
+        //     cheats.deal(cuenta, 2 ether);
+
+        //     cheats.prank(cuenta);
+            
+        //     testLifeOutGenesis.mintLifeOutGenesis
+        //     {value: mintCost * limitByAddress}(limitByAddress);
+        // }
+
+        assertEq(NFTLifeOut, testLifeOutGenesis.tokenIdCounter() - 1);
+        assertEq(mintCost * NFTLifeOut , address(testLifeOutGenesis).balance);
+        
     }
 
 }
