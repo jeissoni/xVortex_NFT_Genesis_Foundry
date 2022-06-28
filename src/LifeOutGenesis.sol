@@ -131,10 +131,7 @@ contract LifeOutGenesis is ERC721, Ownable {
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {   
         if (!_exists(tokenId)){
             revert TokenDoesNotExist();
-        }
-        if(!revelate){
-            return baseURI;
-        }
+        }     
         return string(abi.encodePacked(baseURI, Strings.toString(tokenId), ".json"));
     }
       
@@ -149,15 +146,14 @@ contract LifeOutGenesis is ERC721, Ownable {
             revert SaleNotStarted(msg.sender);
         }
 
-        if (msg.value != MINT_COST * amountNft) {
+        if (msg.value != mintCost * amountNft) {
             revert IncorrectPayment(msg.sender, msg.value);
         }
 
         if(amountNft > (LIMIT_NFT_BY_ADDRES - balanceOf(msg.sender))){
             revert NftLimitPerDirection(
                 msg.sender,
-                balanceOf(msg.sender));
-                
+                balanceOf(msg.sender));                
         }                
 
         for(uint i; i < amountNft ; i++){
