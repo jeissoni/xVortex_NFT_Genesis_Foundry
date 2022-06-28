@@ -10,6 +10,39 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 ///@notice Token ERC721 for the life Out 
 contract LifeOutGenesis is ERC721, Ownable {   
 
+    ///============================================
+    ///============= Errors =======================
+    
+    ///@notice NFT per address limit exceeded
+    ///@param user Caller address 
+    ///@param balanceOf User NFT balance
+    error NftLimitPerDirection(address user, uint256 balanceOf); 
+
+    ///@notice The sent value of ETH is not correct to make the purchase
+    ///@param user Caller address 
+    ///@param amountSent Amount sent by the user 
+    error IncorrectPayment(address user, uint256 amountSent);
+   
+    ///@notice No funds to transfer
+    ///@param owner Caller address
+    error NotFondsToTranfer(address owner);
+
+    ///@notice Error transferring funds to account
+    ///@param owner Caller address
+    error UnsuccessfulPayout(address owner);
+
+    ///@notice Invoked token number does not exist    
+    error TokenDoesNotExist();
+    
+    ///@notice The sale not started
+    ///@param user Caller address
+    error SaleNotStarted(address user);
+
+    ///@notice No token available for sale
+    ///@param user Caller address
+    error NftSoldOut(address user);
+   
+
     /// ===========================================
     /// ============ Immutable storage ============
     /// @notice Available NFT supply
@@ -63,38 +96,8 @@ contract LifeOutGenesis is ERC721, Ownable {
     /// @param date Date when change 
     event SetStartSale(address indexed owner, uint256 date);
 
-    ///============================================
-    ///============= Errors =======================
+
     
-    ///@notice NFT per address limit exceeded
-    ///@param user Caller address 
-    ///@param balanceOf User NFT balance
-    error NftLimitPerDirection(address user, uint256 balanceOf); 
-
-    ///@notice The sent value of ETH is not correct to make the purchase
-    ///@param user Caller address 
-    ///@param amountSent Amount sent by the user 
-    error IncorrectPayment(address user, uint256 amountSent);
-   
-    ///@notice No funds to transfer
-    ///@param owner Caller address
-    error NotFondsToTranfer(address owner);
-
-    ///@notice Error transferring funds to account
-    ///@param owner Caller address
-    error UnsuccessfulPayout(address owner);
-
-    ///@notice Invoked token number does not exist    
-    error TokenDoesNotExist();
-    
-    ///@notice The sale not started
-    ///@param user Caller address
-    error SaleNotStarted(address user);
-
-    ///@notice No token available for sale
-    ///@param user Caller address
-    error NftSoldOut(address user);
-   
     /// =========================================================
     /// ============ Functions ==================================  
 
