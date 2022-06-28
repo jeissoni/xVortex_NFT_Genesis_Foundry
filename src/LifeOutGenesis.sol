@@ -47,10 +47,7 @@ contract LifeOutGenesis is ERC721, Ownable {
     /// ============ Immutable storage ============
     /// @notice Available NFT supply
     uint256 public constant AVAILABLE_SUPPLY = 999;
-
-    /// @notice Cost to mint each NFT 
-    uint256 public constant MINT_COST = 0.3 ether;
-
+   
     ///@notice Maximum number of nft to buy per address
     uint256 public constant LIMIT_NFT_BY_ADDRES = 3;
 
@@ -62,21 +59,23 @@ contract LifeOutGenesis is ERC721, Ownable {
     ///@notice String with the base for the tokenURI
     string public baseURI;   
 
-    ///@notice Used to know if the goal is revealed or not
-    bool public revelate;  
+    ///@notice used to know if the sale of NFT has started
+    bool public startSale;   
 
+     /// @notice Cost to mint each NFT 
+    uint256 public mintCost;
+ 
     /// @notice Number of NFTs minted
     Counters.Counter public tokenIdCounter;    
 
-    ///@notice used to know if the sale of NFT has started
-    bool public startSale;    
     
     /// ======================================================
     /// ============ Constructor =============================
-    constructor() ERC721("Life Out Genesis", "LOG") {
+    constructor() ERC721("Life Out Genesis", "LOFG") {
 
         tokenIdCounter.increment();
-        baseURI = "ipfs://QmVy37A4BSoBjz3AMgZCaSE2JZMGoNuo4LebP7pZTSUBMT";   
+        baseURI = "ipfs://QmVy37A4BSoBjz3AMgZCaSE2JZMGoNuo4LebP7pZTSUBMT/";   
+        mintCost = 0.3 ether;
     }
 
     /// ========================================================
