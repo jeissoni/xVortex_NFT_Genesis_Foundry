@@ -95,6 +95,10 @@ contract LifeOutGenesis is ERC721, Ownable {
     /// @param date Date when change 
     event SetStartSale(address indexed owner, uint256 date);
 
+    ///@notice Emitted after a successful change mintCost variable
+    ///@param owner Address of owner
+    ///@param amount new value per NFT 
+    event SetMintCost(address indexed owner, uint256 amount);
 
     
     /// =========================================================
@@ -115,10 +119,11 @@ contract LifeOutGenesis is ERC721, Ownable {
         baseURI = setBaseUri;
     }
 
-    ///@notice start the sale of NFTs
-    ///@param value boolean value for sale
-    function setRevelate(bool value) external onlyOwner{
-        revelate = value;
+    ///@notice Allows set price mint by owner
+    ///@param newMintCost value price mint
+    function setMintCost(uint256 newMintCost) external onlyOwner {
+        mintCost = newMintCost;
+        emit SetMintCost(msg.sender, newMintCost);
     }
 
     ///@notice return tokenURI for each token
