@@ -36,15 +36,15 @@ contract LifeOut is Test {
 
     event Received(address sender, uint256 value);
 
-    function buyManyAcount() public {
-        for(uint i = 0; i < 333; i++){
+    function buyManyAcount(uint256 numberAddress, uint256 numberNft) public {
+        for(uint i = 0; i < numberAddress; i++){
             address cuenta = cheats.addr(i+1);
             cheats.deal(cuenta, 2 ether);
 
             cheats.prank(cuenta);
             
             testLifeOutGenesis.mintLifeOutGenesis
-            {value: mintCost * limitByAddress}(limitByAddress);
+            {value: mintCost * numberNft}(numberNft);
         }
     }
 
@@ -54,7 +54,7 @@ contract LifeOut is Test {
         addr2 = cheats.addr(2);
 
         testLifeOutGenesis = new LifeOutGenesis();
-        //testLifeOutGenesis.setStartSale(true);
+
 
         mintCost = testLifeOutGenesis.mintCost();
         limitByAddress = testLifeOutGenesis.LIMIT_NFT_BY_ADDRES();
@@ -63,14 +63,14 @@ contract LifeOut is Test {
 
     function testBuyNft() public {       
         testLifeOutGenesis.setStartSale(true);
-        buyManyAcount();       
+        buyManyAcount(333, limitByAddress);       
         assertEq(NFTLifeOut, testLifeOutGenesis.tokenIdCounter() - 1);
         assertEq(mintCost * NFTLifeOut , address(testLifeOutGenesis).balance);        
     }
 
     function testPrenventWithdrawFounds() public {
         testLifeOutGenesis.setStartSale(true);
-        buyManyAcount();        
+        buyManyAcount(333, limitByAddress);        
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
         cheats.prank(addr1);
         testLifeOutGenesis.withdrawProceeds();
@@ -78,7 +78,7 @@ contract LifeOut is Test {
 
     function testWithdrawFoundsOnlyOwner() public {
         testLifeOutGenesis.setStartSale(true);
-        buyManyAcount();  
+        buyManyAcount(333, limitByAddress);  
         uint256 balanceBefore = address(owner).balance;
         cheats.prank(owner);
         testLifeOutGenesis.withdrawProceeds();
@@ -86,21 +86,78 @@ contract LifeOut is Test {
         assertEq(address(owner).balance, balanceBefore + (mintCost * NFTLifeOut));
     }
 
-    function testDoesNotMintStartSaleNoOpen() public {
+    function testDoesNotMint_StartSaleNoOpen() public {
         
         cheats.deal(addr1, 2 ether);        
         
-        vm.expectRevert(
+        cheats.expectRevert(
             abi.encodeWithSelector(
                 LifeOutGenesis.SaleNotStarted.selector, addr1)
         );
 
         cheats.prank(addr1);
-
         testLifeOutGenesis.mintLifeOutGenesis(1);
+    }
+
+    function testDoesNotMint_IncorrectPayment() public {
+        testLifeOutGenesis.setStartSale(true);
+        cheats.deal(addr1, 2 ether);        
+        cheats.expectRevert(
+            abi.encodeWithSelector(
+                LifeOutGenesis.IncorrectPayment.selector, addr1, 0)
+        );
+
+        cheats.prank(addr1);
+        testLifeOutGenesis.mintLifeOutGenesis(1);
+    }
+
+    function testDoesNotMint_NftLimitPerDirection() public {
+        
+        testLifeOutGenesis.setStartSale(true);
+        cheats.deal(addr1, 2 ether);        
+
+        for(uint i = 0; i < limitByAddress - 1 ; i++){
+            cheats.prank(addr1);            
+
+            testLifeOutGenesis.mintLifeOutGenesis{value: mintCost}(1);
+        }
+
+        cheats.expectRevert(
+            abi.encodeWithSelector(
+                LifeOutGenesis.NftLimitPerDirection.selector, addr1, 2)
+        );
+        cheats.prank(addr1);       
+        testLifeOutGenesis.mintLifeOutGenesis{value: mintCost * 2}(2);
 
     }
 
+    function testDoesNotMint_NftSoldOut() public {
+        address addr_1 = cheats.addr(333);
+        address addr_2 = cheats.addr(334);
+        cheats.deal(addr_1, 2 ether);
+        cheats.deal(addr_2, 2 ether);        
+        
+
+        testLifeOutGenesis.setStartSale(true);
+        buyManyAcount(332, limitByAddress);  
+
+        cheats.prank(addr_1);    
+        testLifeOutGenesis.mintLifeOutGenesis{value: mintCost * 2}(2);
+
+        cheats.expectRevert(
+            abi.encodeWithSelector(
+                LifeOutGenesis.NftSoldOut.selector, addr_2)
+        );
+        cheats.prank(addr_2);       
+        testLifeOutGenesis.mintLifeOutGenesis{value: mintCost * 3}(3);
+
+        cheats.prank(addr_2);  
+        testLifeOutGenesis.mintLifeOutGenesis{value: mintCost * 1}(1);
+    }
+
+    function testNotIncrement() public{
+        testLifeOutGenesis.tokenIdCounter.increment();
+    }
     receive() external payable {
         emit Received(msg.sender, msg.value);
     }   
